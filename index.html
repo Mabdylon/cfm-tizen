@@ -1,65 +1,57 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=360, user-scalable=no" />
-        <meta name="description" content="ChoozForMe" />
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=360, user-scalable=no" />
+<meta name="description" content="ChoozForMe" />
 
-        <title>ChoozForMe</title>
+<title>ChoozForMe</title>
 
-        <link rel="stylesheet" type="text/css" href="css/camera.css" />
-        <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-        <script type="text/javascript" src="js/purl.js"></script>
+<link rel="stylesheet" type="text/css" href="css/camera.css" />
+<script type="text/javascript"
+	src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="js/purl.js"></script>
 
-        <!--        <script type="text/javascript" src="js/webqr/grid.js"></script>
-        <script type="text/javascript" src="js/webqr/version.js"></script>
-        <script type="text/javascript" src="js/webqr/detector.js"></script>
-        <script type="text/javascript" src="js/webqr/formatinf.js"></script>
-        <script type="text/javascript" src="js/webqr/errorlevel.js"></script>
-        <script type="text/javascript" src="js/webqr/bitmat.js"></script>
-        <script type="text/javascript" src="js/webqr/datablock.js"></script>
-        <script type="text/javascript" src="js/webqr/bmparser.js"></script>
-        <script type="text/javascript" src="js/webqr/datamask.js"></script>
-        <script type="text/javascript" src="js/webqr/rsdecoder.js"></script>
-        <script type="text/javascript" src="js/webqr/gf256poly.js"></script>
-        <script type="text/javascript" src="js/webqr/gf256.js"></script>
-        <script type="text/javascript" src="js/webqr/decoder.js"></script>
-        <script type="text/javascript" src="js/webqr/qrcode.js"></script>
-        <script type="text/javascript" src="js/webqr/findpat.js"></script>
-        <script type="text/javascript" src="js/webqr/alignpat.js"></script>
-        <script type="text/javascript" src="js/webqr/databr.js"></script>-->
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js"></script>
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular-resource.min.js"></script>
+<script type="text/javascript" src="js/angular/resources.js"></script>
+<script type="text/javascript" src="js/angular/services.js"></script>
+<script type="text/javascript" src="js/angular/directives.js"></script>
+<script type="text/javascript" src="js/angular/controlers/votes.js"></script>
+<script type="text/javascript" src="js/angular/controlers/camera.js"></script>
+</head>
 
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js"></script>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular-resource.min.js"></script>
-        <script type="text/javascript" src="js/angular/resources.js"></script>
-        <script type="text/javascript" src="js/angular/services.js"></script>
-        <script type="text/javascript" src="js/angular/directives.js"></script>
-        <script type="text/javascript" src="js/angular/controlers/votes.js"></script>
-        <script type="text/javascript" src="js/angular/controlers/camera.js"></script>
-    </head>
+<body ng-controller="camera" ng-app="choozForMe">
 
-    <body ng-controller="camera" ng-app="choozForMe">
-        <div id="camera"></div>
+	<section id="camera_page" ng-show="!displayResult">
+		<div id="camera"></div>
 
-	<div id="countdown"></div>
+		<div id="countdown"></div>
 
-	<div class="timers">
-		<div id="timer2"></div>
-		<div id="timer5"></div>
-		<div id="timer10"></div>
-	</div>
+		<div class="timers">
+			<div id="timer2"></div>
+			<div id="timer5"></div>
+			<div id="timer10"></div>
+		</div>
 
-	<div id="thumbnail">
-		<div id="upImage"></div>
-	</div>
+		<div id="thumbnail">
+			<div id="upImage"></div>
+		</div>
 
-	<div id="shutter-container">
-            <div id="shutter" ng-click="snapshot()"></div>
-	</div>
+		<div id="shutter-container">
+			<div id="shutter" ng-click="snapshot()"></div>
+		</div>
 
-	<div id="bar"></div>
+		<div id="bar"></div>
 
-        <canvas id="canvas" style="display: none;"></canvas>
+		<canvas id="canvas" style="display: none;"></canvas>
+	</section>
 
-    </body>
+	<section id="camera_result_page" ng-show="displayResult" >
+
+	</section>
+
+</body>
 </html>

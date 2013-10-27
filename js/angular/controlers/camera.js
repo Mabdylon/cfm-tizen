@@ -15,16 +15,16 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
     var localMediaStream = null;
     var file;
     $scope.photoCount = 0;
+    $scope.displayResult = false;
 
     navigator.getUserMedia({video: true}, function(stream) {
+    	localMediaStream = window.URL.createObjectURL(stream);
         video = $('<video/>', {
             autoplay: 'autoplay',
             id: 'video',
             style: 'height:' + $(window).height() + 'px',
-            src: window.URL.createObjectURL(stream)
+            src: localMediaStream
         }).appendTo("#camera").get(0);
-        video.load();
-        video.play();
     }, onFailSoHard);
 
     $scope.snapshot = function() {
@@ -37,6 +37,9 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
             }
             $scope.photoCount++;
             $scope.loadThumbNail(false);
+            if($scope.photoCount >= 2) {
+            	$scope.showResult(true);
+            }
         }
     };
 
@@ -46,6 +49,10 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
         if (show) {
             $('#thumbnail').fadeIn();
         }
+    };
+    
+    $scope.showResult = function(show) {
+    	$scope.displayResult = show;
     };
 
 }
