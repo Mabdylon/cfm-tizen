@@ -22,7 +22,7 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
         video = $('<video/>', {
             autoplay: 'autoplay',
             id: 'video',
-            style: 'height:' + $(window).height() + 'px',
+            style: 'height:' + $(window).height() + 'px;'+'width:'+$(window).width() + 'px',
             src: localMediaStream
         }).appendTo("#camera").get(0);
     }, onFailSoHard);
@@ -39,6 +39,7 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
     };
     
     $scope.showResult = function(show) {
+    	$scope.photoCount = 0;
     	$scope.displayResult = show;
     };
     
