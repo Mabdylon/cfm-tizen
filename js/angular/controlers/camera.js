@@ -9,7 +9,7 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
     var onFailSoHard = function(e) {
         console.log('Reeeejected!', e);
     };
-
+ 
     var canvas = document.querySelector('canvas');
     var ctx = canvas.getContext('2d');
     var localMediaStream = null;
@@ -23,7 +23,8 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
             style: 'height:' + $(window).height() + 'px',
             src: window.URL.createObjectURL(stream)
         }).appendTo("#camera").get(0);
-        localMediaStream = stream;
+        video.load();
+        video.play();
     }, onFailSoHard);
 
     $scope.snapshot = function() {
