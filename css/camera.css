@@ -1,0 +1,31 @@
+* {
+	font-family: Lucida Sans, Arial, Helvetica, sans-serif;
+}
+
+body {
+	height: 100%;
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	background-color: black;
+}
+
+#camera {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+}
+
+#thumb1 {
+	float: left;
+	top: 150px;
+	height: 40px;
+	width: 40px;
+}
+
+#thumb2 {
+	float: right;
+	top: 150px;;
+	height: 40px;
+	width: 40px;
+}

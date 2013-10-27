@@ -1,441 +1,381 @@
-/*
- *      Copyright 2013  Samsung Electronics Co., Ltd
- *
- *      Licensed under the Flora License, Version 1.1 (the "License");
- *      you may not use this file except in compliance with the License.
- *      You may obtain a copy of the License at
- *
- *              http://floralicense.org/license/
- *
- *      Unless required by applicable law or agreed to in writing, software
- *      distributed under the License is distributed on an "AS IS" BASIS,
- *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *      See the License for the specific language governing permissions and
- *      limitations under the License.
- */
+    /*
+     *      Copyright 2013  Samsung Electronics Co., Ltd
+     *
+     *      Licensed under the Flora License, Version 1.1 (the "License");
+     *      you may not use this file except in compliance with the License.
+     *      You may obtain a copy of the License at
+     *
+     *              http://floralicense.org/license/
+     *
+     *      Unless required by applicable law or agreed to in writing, software
+     *      distributed under the License is distributed on an "AS IS" BASIS,
+     *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     *      See the License for the specific language governing permissions and
+     *      limitations under the License.
+     */
 
-/*jslint devel: true*/
-/*global $, Audio, window, localStorage, tizen, canvas, SystemIO, document, navigator, clearInterval, setInterval, setTimeout */
-var selfCamera;
-function SelfCamera() {
-	"use strict";
-}
+    /*jslint devel: true*/
+    /*global $, Audio, window, localStorage, tizen, canvas, SystemIO, document, navigator, clearInterval, setInterval, setTimeout */
+    var selfCamera;
+    function SelfCamera() {
+            "use strict";
+    }
 
-(function () {
-	"use strict";
-	var DELAY_2_SECOND = 2, DELAY_5_SECOND = 5, DELAY_10_SECOND = 10;
-	SelfCamera.prototype = {
-		countdown: 0, // current value after clicking the camera button
-		countdownTimeoutID: -1,
-		countSound: new Audio('sounds/sounds_count.wav'),
-		img: document.createElement('canvas'),
-		filename: '',
-		loadDirectory: '',
-		parentSaveDirectory: 'file:///opt/usr/media/',
-		saveDirectory: 'file:///opt/usr/media/Images/',
-		IMG_PREFIX: 'SelfCamera_',
-		shutterSound: new Audio('sounds/sounds_Shutter_01.wav'),
-		timer: null, // value set by the buttons
-		systemIO: null,
-		video: null,
-		src: null,
-		isMediaWorking: false
-	};
+    (function () {
+            "use strict";
+            SelfCamera.prototype = {
+                    countSound: new Audio('sounds/sounds_count.wav'),
+                    img: document.createElement('canvas'),
+                    filename: '',
+                    loadDirectory: '',
+                    parentSaveDirectory: 'file:///opt/usr/media/',
+                    saveDirectory: 'file:///opt/usr/media/Images/',
+                    IMG_PREFIX: 'SelfCamera_',
+                    shutterSound: new Audio('sounds/sounds_Shutter_01.wav'),
+                    timer: null, // value set by the buttons
+                    systemIO: null,
+                    video: null,
+                    src: null,
+                    isMediaWorking: false
+            };
 
-	SelfCamera.prototype.setTimer = function setTimer(value) {
-		this.timer = value;
-		$('#timer2, #timer5, #timer10').removeClass('selected');
-		$('#timer' + value).addClass('selected');
-		if (this.isMediaWorking) {
-			try {
-				selfCamera.video.play();
-			} catch (e) {
-				console.error(e);
-			}
-		}
-	};
+            SelfCamera.prototype.onCaptureVideoSuccess = function onCaptureVideoSuccess(stream) {
+                    var urlStream;
+                    urlStream = window.webkitURL.createObjectURL(stream);
+                    this.isMediaWorking = true;
+                    this.createVideoElement(urlStream);
+            };
 
-	SelfCamera.prototype.onCaptureVideoSuccess = function onCaptureVideoSuccess(stream) {
-		var urlStream;
-		urlStream = window.webkitURL.createObjectURL(stream);
-		this.isMediaWorking = true;
-		this.createVideoElement(urlStream);
-		this.setTimer(DELAY_2_SECOND);
-	};
+            SelfCamera.prototype.createVideoElement = function (src) {
+                    this.video = $('<video/>', {
+                            autoplay: 'autoplay',
+                            id: 'video',
+                            style: 'height:' + $(window).height() + 'px',
+                            src: src
+                    }).appendTo("#camera").get(0);
 
-	SelfCamera.prototype.createVideoElement = function (src) {
-		this.video = $('<video/>', {
-			autoplay: 'autoplay',
-			id: 'video',
-			style: 'height:' + $(window).height() + 'px',
-			src: src
-		}).appendTo("#camera").get(0);
+                    this.bindVideoEvents();
+            };
 
-		this.bindVideoEvents();
-	};
+            SelfCamera.prototype.onCaptureVideoError = function onCaptureVideoError(e) {
+                    // alert("Video Capture Error");
+                    console.error(e);
+            };
 
-	SelfCamera.prototype.onCaptureVideoError = function onCaptureVideoError(e) {
-		// alert("Video Capture Error");
-		console.error(e);
-	};
+            SelfCamera.prototype.startPreview = function startPreview() {
+                    var options = {
+                            audio: true,
+                            video: true
+                    };
 
-	SelfCamera.prototype.startPreview = function startPreview() {
-		var options = {
-			audio: true,
-			video: true
-		};
+                    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+                    try {
+                            if (typeof (navigator.getUserMedia) === 'function') {
+                                    navigator.getUserMedia(options, this.onCaptureVideoSuccess.bind(this), this.onCaptureVideoError.bind(this));
+                            }
+                    } catch (e) {
+                            alert('navigator.getUserMedia() error.');
+                            console.error('navigator.getUserMedia() error: ' + e.message);
+                    }
 
-		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
-		try {
-			if (typeof (navigator.getUserMedia) === 'function') {
-				navigator.getUserMedia(options, this.onCaptureVideoSuccess.bind(this), this.onCaptureVideoError.bind(this));
-			}
-		} catch (e) {
-			alert('navigator.getUserMedia() error.');
-			console.error('navigator.getUserMedia() error: ' + e.message);
-		}
+            };
 
-	};
+            SelfCamera.prototype.launchPreview = function launchPreview() {
+                    var service, onReply, self = this;
+                    if (this.filename === '') {
+                            return false;
+                    }
 
-	SelfCamera.prototype.launchPreview = function launchPreview() {
-		var service, onReply, self = this;
-		if (this.filename === '') {
-			return false;
-		}
+                    function fillStr(num) {
+                            num = num.toString();
+                            if (num.length < 2) {
+                                    num = '00' + num;
+                            } else if (num.length < 3) {
+                                    num = '0' + num;
+                            }
+                            return num;
+                    }
+                    this.showPhotoPreview(this.filename);
+                    return true;
+            };
 
-		function fillStr(num) {
-			num = num.toString();
-			if (num.length < 2) {
-				num = '00' + num;
-			} else if (num.length < 3) {
-				num = '0' + num;
-			}
-			return num;
-		}
-		this.showPhotoPreview(this.filename);
-		return true;
-	};
+            SelfCamera.prototype.showGallery = function showGallery(service) {
+                    var onReply, self = this;
+                    onReply = {
+                            onsuccess: function (data) {
+                                    self.showPhotoPreview(data[0].value[0]);
+                            },
+                            onfailure: function () {}
+                    };
 
-	SelfCamera.prototype.showGallery = function showGallery(service) {
-		var onReply, self = this;
-		onReply = {
-			onsuccess: function (data) {
-				self.showPhotoPreview(data[0].value[0]);
-			},
-			onfailure: function () {}
-		};
+                    try {
+                            tizen.application.launchAppControl(service, null, function () {
+                            }, function (err) {
+                                    console.error('Gallery launch failed: ' + err.message);
+                            }, onReply);
+                    } catch (exc) {
+                            alert('Exception: ' + exc.message);
+                    }
+            };
 
-		try {
-			tizen.application.launchAppControl(service, null, function () {
-			}, function (err) {
-				console.error('Gallery launch failed: ' + err.message);
-			}, onReply);
-		} catch (exc) {
-			alert('Exception: ' + exc.message);
-		}
-	};
+            SelfCamera.prototype.showPhotoPreview = function showPhotoPreview(file) {
+                    var service, onReply, self = this;
+                    service = new tizen.ApplicationControl('http://tizen.org/appcontrol/operation/view', file, "image/*");
+                    onReply = {onsuccess: function () {}, onfailure: function () {}};
 
-	SelfCamera.prototype.showPhotoPreview = function showPhotoPreview(file) {
-		var service, onReply, self = this;
-		service = new tizen.ApplicationControl('http://tizen.org/appcontrol/operation/view', file, "image/*");
-		onReply = {onsuccess: function () {}, onfailure: function () {}};
+                    try {
+                            tizen.application.launchAppControl(service, null, function () {}, function (err) {
+                                    console.error('Photo launch failed: ' + err.message);
+                            }, onReply);
+                    } catch (exc) {
+                            alert('Exception: ' + exc.message);
+                    }
+            };
 
-		try {
-			tizen.application.launchAppControl(service, null, function () {}, function (err) {
-				console.error('Photo launch failed: ' + err.message);
-			}, onReply);
-		} catch (exc) {
-			alert('Exception: ' + exc.message);
-		}
-	};
+            SelfCamera.prototype.setLoadDirectory = function setLoadDirectory(dirName) {
+                    this.loadDirectory = dirName;
+                    if (!this.loadDirectory.match(/\/$/)) {
+                            this.loadDirectory += '/';
+                    }
+            };
 
-	SelfCamera.prototype.setLoadDirectory = function setLoadDirectory(dirName) {
-		this.loadDirectory = dirName;
-		if (!this.loadDirectory.match(/\/$/)) {
-			this.loadDirectory += '/';
-		}
-	};
+            SelfCamera.prototype.saveCanvas = function saveCanvas(canvas, fileName) {
+                    var data, self = this, onSuccess = function (fileHandle) {
+                            this.setLoadDirectory(this.getFileDirectoryURI(fileHandle));
+                            tizen.content.scanFile(fileName, function () {
+                                    self.loadThumbnail();
+                            }, function () {
+                                    console.error('scanFile: file not found');
+                                    self.loadThumbnail();
+                            });
+                    }.bind(this);
 
-	SelfCamera.prototype.saveCanvas = function saveCanvas(canvas, fileName) {
-		var data, self = this, onSuccess = function (fileHandle) {
-			this.setLoadDirectory(this.getFileDirectoryURI(fileHandle));
-			tizen.content.scanFile(fileName, function () {
-				self.loadThumbnail();
-			}, function () {
-				console.error('scanFile: file not found');
-				self.loadThumbnail();
-			});
-		}.bind(this);
+                    try {
+                            data = canvas.toDataURL().replace('data:image/png;base64,', '').replace('data:,', '');
+                            if (data === '') {
+                                    throw {message: "No image source"};
+                            }
+                    } catch (e) {
+                            this.filename = '';
+                            console.error('canvas.toDataUrl error: ' + e.message);
+                            alert("Data source error: " + e.message);
+                            return;
+                    }
 
-		try {
-			data = canvas.toDataURL().replace('data:image/png;base64,', '').replace('data:,', '');
-			if (data === '') {
-				throw {message: "No image source"};
-			}
-		} catch (e) {
-			this.filename = '';
-			console.error('canvas.toDataUrl error: ' + e.message);
-			alert("Data source error: " + e.message);
-			return;
-		}
+                    try {
+                            this.systemIO.deleteNode(fileName, function () {
+                                    try {
+                                            this.systemIO.saveFileContent(fileName, data, onSuccess, 'base64');
+                                    } catch (e) {
+                                            console.error('saveDataToFile error: ' + e.message);
+                                    }
+                            }.bind(this));
+                    } catch (e2) {
+                            console.error('Delete old file error: ' + e2.message);
+                    }
+            };
 
-		try {
-			this.systemIO.deleteNode(fileName, function () {
-				try {
-					this.systemIO.saveFileContent(fileName, data, onSuccess, 'base64');
-				} catch (e) {
-					console.error('saveDataToFile error: ' + e.message);
-				}
-			}.bind(this));
-		} catch (e2) {
-			console.error('Delete old file error: ' + e2.message);
-		}
-	};
+            SelfCamera.prototype.captureImage = function captureImage(video) {
+                    var sourceWidth = window.innerWidth,
+                            sourceHeight = window.innerHeight,
+                            sourceX = (sourceWidth - $(video).width()) / 2,
+                            sourceY = (sourceHeight - $(video).height()) / 2;
 
-	SelfCamera.prototype.captureImage = function captureImage(video) {
-		var sourceWidth = window.innerWidth,
-			sourceHeight = window.innerHeight,
-			sourceX = (sourceWidth - $(video).width()) / 2,
-			sourceY = (sourceHeight - $(video).height()) / 2;
+                    this.img.width = sourceWidth;
+                    this.img.height = sourceHeight;
 
-		this.img.width = sourceWidth;
-		this.img.height = sourceHeight;
+                    // Crop image to viewport dimension
+                    this.img.getContext('2d').drawImage(video, sourceX, sourceY, $(video).width(), $(video).height());
 
-		// Crop image to viewport dimension
-		this.img.getContext('2d').drawImage(video, sourceX, sourceY, $(video).width(), $(video).height());
+                    // To get best available dimension
+                    // this.img.width = video.videoWidth;
+                    // this.img.height = video.videoHeight;
+                    // this.img.getContext('2d').drawImage(video, 0, 0);
+            };
 
-		// To get best available dimension
-		// this.img.width = video.videoWidth;
-		// this.img.height = video.videoHeight;
-		// this.img.getContext('2d').drawImage(video, 0, 0);
-	};
+            SelfCamera.prototype.setFileName = function setFileName(filename) {
+                    this.filename = filename;
+                    this.loadThumbnail();
+            };
 
-	SelfCamera.prototype.setFileName = function setFileName(filename) {
-		this.filename = filename;
-		this.loadThumbnail();
-	};
+            SelfCamera.prototype.getTimestamp = function getTimestamp() {
+                    var d = new Date();
+                    return '' + d.getUTCFullYear() +
+                            '-' + d.getUTCMonth() +
+                            '-' + d.getUTCDay() +
+                            '-' + d.getUTCHours() +
+                            '-' + d.getUTCMinutes() +
+                            '-' + d.getUTCSeconds() +
+                            '-' + d.getUTCMilliseconds();
+            };
 
-	SelfCamera.prototype.getTimestamp = function getTimestamp() {
-		var d = new Date();
-		return '' + d.getUTCFullYear() +
-			'-' + d.getUTCMonth() +
-			'-' + d.getUTCDay() +
-			'-' + d.getUTCHours() +
-			'-' + d.getUTCMinutes() +
-			'-' + d.getUTCSeconds() +
-			'-' + d.getUTCMilliseconds();
-	};
+            SelfCamera.prototype.takePhoto = function takePhoto() {
+                    this.captureImage(this.video);
+                    this.filename = this.IMG_PREFIX + this.getTimestamp() + '.png';
+                    this.savePhoto();
+            };
 
-	SelfCamera.prototype.takePhoto = function takePhoto() {
-		this.captureImage(this.video);
-		this.filename = this.IMG_PREFIX + this.getTimestamp() + '.png';
-		this.savePhoto();
-	};
+            SelfCamera.prototype.savePhoto = function savePhoto() {
+                    var self = this;
+                    this.saveCanvas(this.img, this.saveDirectory + this.filename);
+                    setTimeout(function(){ self.loadThumbnail(true); }, 500);
+            };
 
-	SelfCamera.prototype.savePhoto = function savePhoto() {
-		var self = this;
-		this.saveCanvas(this.img, this.saveDirectory + this.filename);
-		setTimeout(function(){ self.loadThumbnail(true); }, 500);
-	};
+            SelfCamera.prototype.findLastPhoto = function findLastPhoto(onFind) {
+                    tizen.content.find(
+                            function (files) {
+                                    if (files.length !== 0) {
+                                            onFind(files[0].contentURI);
+                                    } else {
+                                            onFind(null);
+                                    }
+                            },
+                            null,
+                            null,
+                            new tizen.CompositeFilter("INTERSECTION",
+                                    [
+                                            new tizen.AttributeFilter("title", "STARTSWITH", this.IMG_PREFIX),
+                                            new tizen.AttributeFilter("type", "EXACTLY", 'IMAGE')
+                                    ]),
+                            new tizen.SortMode("modifiedDate", "DESC")
+                    );
+            };
 
-	SelfCamera.prototype.findLastPhoto = function findLastPhoto(onFind) {
-		tizen.content.find(
-			function (files) {
-				if (files.length !== 0) {
-					onFind(files[0].contentURI);
-				} else {
-					onFind(null);
-				}
-			},
-			null,
-			null,
-			new tizen.CompositeFilter("INTERSECTION",
-				[
-					new tizen.AttributeFilter("title", "STARTSWITH", this.IMG_PREFIX),
-					new tizen.AttributeFilter("type", "EXACTLY", 'IMAGE')
-				]),
-			new tizen.SortMode("modifiedDate", "DESC")
-		);
-	};
+            SelfCamera.prototype.bindVideoEvents = function () {
+                    var self = this;
+                    $(this.video).on("stalled", function (e) {
+                            this.load();
+                    });
+                    $(this.video).on("playing", function () {
+                            var margin = ($(window).width() - $(self.video).width()) / 2,
+                                    width = Math.round($(window).height() *
+                                            self.video.videoWidth / self.video.videoHeight);
 
-	SelfCamera.prototype.onCountdownTimeout = function onCountdownTimeout() {
-		this.countdown -= 1;
-		if (this.countdown < 0) {
-			clearTimeout(this.countdownTimeoutID);
-			this.countdownTimeoutID = -1;
-			$('#countdown').text('').hide();
-			$('#countdown').hide();
-			this.shutterSound.currentTime = 0;
-			this.shutterSound.play();
-			try {
-				this.takePhoto();
-			} catch (e) {
-				console.error(e);
-			}
-			this.bindTimerClicks();
-		} else {
-			$('#countdown').text(this.countdown);
-			this.countSound.currentTime = 0;
-			this.countSound.play();
-			this.countdownTimeoutID = setTimeout(this.onCountdownTimeout.bind(this), 1000);
-		}
-	};
+                            $(self.video).css({
+                                    'margin-left': margin + 'px',
+                                    'width': width + 'px'
+                            });
 
-	SelfCamera.prototype.startCountdown = function startCountdown(startValue) {
-		$("#thumbnail").hide();
-		$(".timers div").off("click");
-		if (this.countdownTimeoutID > 0) {
-			clearTimeout(this.countdownTimeoutID);
-			this.countdownTimeoutID = -1;
-		}
-		this.countdown = startValue || this.timer;
-		this.countdownTimeoutID = setTimeout(this.onCountdownTimeout.bind(this), 1000);
-		$('#countdown').show().text(this.countdown);
-		this.countSound.currentTime = 0;
-		this.countSound.play();
-	};
+                            if (self.countdown > 0) {
+                                    self.startCountdown(self.countdown);
+                            }
+                    });
+                    $(this.video).on('click', function () { this.play(); });
+            };
 
-	SelfCamera.prototype.bindVideoEvents = function () {
-		var self = this;
-		$(this.video).on("stalled", function (e) {
-			this.load();
-		});
-		$(this.video).on("playing", function () {
-			var margin = ($(window).width() - $(self.video).width()) / 2,
-				width = Math.round($(window).height() *
-					self.video.videoWidth / self.video.videoHeight);
+            SelfCamera.prototype.bindEvents = function bindEvents() {
+                    var self = this;
+                    document.addEventListener('webkitvisibilitychange', function (event) {
+                            if (document.webkitVisibilityState === 'visible') {
+                                    if (self.video !== null) {
+                                            self.reloadSaveDirectory(function () {
+                                                    self.video.play();
+                                            });
+                                    }
+                                    self.loadThumbnail();
+                            } else {
+                                    self.video.pause();
+                            }
+                    });
 
-			$(self.video).css({
-				'margin-left': margin + 'px',
-				'width': width + 'px'
-			});
+                    $('shutter').mousedown(function (ev) {
+                            $('shutter').addClass('active');
+                    }).mouseup(function (ev) {
+                            $('shutter').removeClass('active');
+                    }).on('touchstart', function (ev) {
+                            $('shutter').addClass('active');
+                    }).on('touchend', function (ev) {
+                            $('shutter').removeClass('active');
+                    });
 
-			if (self.countdown > 0) {
-				self.startCountdown(self.countdown);
-			}
-		});
-		$(this.video).on('click', function () { this.play(); });
-	};
+                    $(window).on('tizenhwkey', function (e) {
+                            if (e.originalEvent.keyName === "back") {
+                                    tizen.application.getCurrentApplication().exit();
+                            }
+                    });
 
-	SelfCamera.prototype.bindEvents = function bindEvents() {
-		var self = this;
-		document.addEventListener('webkitvisibilitychange', function (event) {
-			clearTimeout(this.countdownTimeoutID);
-			this.countdownTimeoutID = -1;
-			if (document.webkitVisibilityState === 'visible') {
-				if (self.video !== null) {
-					self.reloadSaveDirectory(function () {
-						self.video.play();
-					});
-				}
-				self.loadThumbnail();
-				if (self.countdown > 0) {
-					self.startCountdown(self.countdown);
-				}
-			} else {
-				self.video.pause();
-			}
-		});
+                    this.bindTimerClicks();
 
-		$('shutter').mousedown(function (ev) {
-			$('shutter').addClass('active');
-		}).mouseup(function (ev) {
-			$('shutter').removeClass('active');
-		}).on('touchstart', function (ev) {
-			$('shutter').addClass('active');
-		}).on('touchend', function (ev) {
-			$('shutter').removeClass('active');
-		});
+                    $('#thumbnail').on('click', this.launchPreview.bind(this));
+                    $('#shutter').on('touchstart', this.shutterTouched.bind(this));
+            };
 
-		$(window).on('tizenhwkey', function (e) {
-			if (e.originalEvent.keyName === "back") {
-				tizen.application.getCurrentApplication().exit();
-			}
-		});
+            SelfCamera.prototype.shutterTouched = function () {
+                    if (this.isMediaWorking) {
+                            this.shutterSound.play();
+                            try {
+                                    this.takePhoto();
+                            } catch (e) {
+                                    console.error(e);
+                            }
+                    } else {
+                            alert("To be able to take pictures you have to allow application to use" +
+                                            " your media. Please restart app and allow Self Camera to" +
+                                            " access media content.");
+                    }
+            };
 
-		this.bindTimerClicks();
+            // Fix for file.parent.toURI() + escaping white signs
+            SelfCamera.prototype.getFileDirectoryURI = function (file) {
+                    var dirURI;
+                    dirURI = encodeURI(
+                            file.toURI()
+                                    .split('/')
+                                    .slice(0, -1)
+                                    .join('/')
+                    );
+                    return dirURI;
+            };
 
-		$('#thumbnail').on('click', this.launchPreview.bind(this));
-		$('#shutter').on('touchstart', this.shutterTouched.bind(this));
-	};
+            SelfCamera.prototype.loadThumbnail = function (show) {
+                    var self = this;
+                    this.findLastPhoto(function (file) {
+                            if (file) {
 
-	SelfCamera.prototype.shutterTouched = function () {
-		if (this.isMediaWorking) {
-			this.startCountdown();
-		} else {
-			alert("To be able to take pictures you have to allow application to use" +
-					" your media. Please restart app and allow Self Camera to" +
-					" access media content.");
-		}
-	};
+                                    self.filename = file;
+                                    file = file + '?r=' + Math.random();
+                                    $('#upImage').css('background-image', 'url(' + file + ')');
+                                    $('#thumbnail').css('background-image', 'url("./images/transparent.png")');
+                                    if (show) {
+                                            $('#thumbnail').fadeIn();
+                                    }
+                            } else {
+                                    self.filename = '';
+                                    $('#thumbnail').hide();
+                                    $('#upImage').css('background-image', '');
+                            }
+                    }.bind(this));
+            };
 
-	SelfCamera.prototype.bindTimerClicks = function bindTimerClicks() {
-		$('#timer2').on('click', this.setTimer.bind(this, DELAY_2_SECOND));
-		$('#timer5').on('click', this.setTimer.bind(this, DELAY_5_SECOND));
-		$('#timer10').on('click', this.setTimer.bind(this, DELAY_10_SECOND));
-	};
+            SelfCamera.prototype.reloadSaveDirectory = function (callback) {
+                    var self = this;
+                    tizen.filesystem.resolve('images', function () {
+                            callback();
+                    }, function () {
+                            self.systemIO.openDir(self.parentSaveDirectory, function (dir) {
+                                    dir.createDirectory('Images');
+                                    callback();
+                            }, function () {
+                                    console.error('no parent directory');
+                                    callback();
+                            });
+                    }, 'r');
+            };
 
-	// Fix for file.parent.toURI() + escaping white signs
-	SelfCamera.prototype.getFileDirectoryURI = function (file) {
-		var dirURI;
-		dirURI = encodeURI(
-			file.toURI()
-				.split('/')
-				.slice(0, -1)
-				.join('/')
-		);
-		return dirURI;
-	};
+            SelfCamera.prototype.init = function init() {
+                    var self = this;
+                    this.reloadSaveDirectory(function () {
+                            self.systemIO = new SystemIO();
+                            self.loadThumbnail(true);
+                            self.startPreview();
+                            self.bindEvents();
+                    });
+            };
 
-	SelfCamera.prototype.loadThumbnail = function (show) {
-		var self = this;
-		this.findLastPhoto(function (file) {
-			if (file) {
-				
-				self.filename = file;
-				file = file + '?r=' + Math.random();
-				$('#upImage').css('background-image', 'url(' + file + ')');
-				$('#thumbnail').css('background-image', 'url("./images/transparent.png")');
-				if (show) {
-					$('#thumbnail').fadeIn();
-				}
-			} else {
-				self.filename = '';
-				$('#thumbnail').hide();
-				$('#upImage').css('background-image', '');
-			}
-		}.bind(this));
-	};
+    }());
 
-	SelfCamera.prototype.reloadSaveDirectory = function (callback) {
-		var self = this;
-		tizen.filesystem.resolve('images', function () {
-			callback();
-		}, function () {
-			self.systemIO.openDir(self.parentSaveDirectory, function (dir) {
-				dir.createDirectory('Images');
-				callback();
-			}, function () {
-				console.error('no parent directory');
-				callback();
-			});
-		}, 'r');
-	};
-
-	SelfCamera.prototype.init = function init() {
-		var self = this;
-		this.reloadSaveDirectory(function () {
-			self.systemIO = new SystemIO();
-			self.loadThumbnail(true);
-			self.startPreview();
-			self.bindEvents();
-		});
-	};
-
-}());
-
-selfCamera = new SelfCamera();
-$(document).ready(function () {
-	"use strict";
-	selfCamera.init();
-});
+    selfCamera = new SelfCamera();
+    $(document).ready(function () {
+            "use strict";
+            selfCamera.init();
+    });
