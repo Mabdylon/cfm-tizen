@@ -46,6 +46,10 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
     $scope.loadThumbNail = function(show) {
         $('#upImage').css('background-image', 'url(' + file + ')');
         $('#thumbnail').css('background-image', 'url("./images/transparent.png")');
+        $('#upImage1').css('background-image', 'url(' + file + ')');
+        $('#thumbnail1').css('background-image', 'url("./images/transparent.png")');
+        $('#upImage2').css('background-image', 'url(' + file + ')');
+        $('#thumbnail2').css('background-image', 'url("./images/transparent.png")');
         if (show) {
             $('#thumbnail').fadeIn();
         }
@@ -54,6 +58,10 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
     $scope.showResult = function(show) {
     	$scope.displayResult = show;
     };
+    
+    $scope.shareOnFaceBook = function() {
+    	alert('sharing on facebook');
+    }
 
 }
     
