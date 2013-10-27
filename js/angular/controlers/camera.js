@@ -27,29 +27,12 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
         }).appendTo("#camera").get(0);
     }, onFailSoHard);
 
-    $scope.snapshot = function() {
-        if (localMediaStream) {
-            ctx.drawImage(video, 0, 0, 320, 240);
-            if ($scope.photoCount % 2 === 0) {
-                file = canvas.toDataURL('image/png');
-            } else {
-                file = canvas.toDataURL('image/png');
-            }
-            $scope.photoCount++;
-            $scope.loadThumbNail(false);
-            if($scope.photoCount >= 2) {
-            	$scope.showResult(true);
-            }
-        }
+    $scope.createImageResult = function(number) {
+    	$('#upImage'+number).css('background-image', 'url(' + file + ')');
     };
-
+    
     $scope.loadThumbNail = function(show) {
         $('#upImage').css('background-image', 'url(' + file + ')');
-        $('#thumbnail').css('background-image', 'url("./images/transparent.png")');
-        $('#upImage1').css('background-image', 'url(' + file + ')');
-        $('#thumbnail1').css('background-image', 'url("./images/transparent.png")');
-        $('#upImage2').css('background-image', 'url(' + file + ')');
-        $('#thumbnail2').css('background-image', 'url("./images/transparent.png")');
         if (show) {
             $('#thumbnail').fadeIn();
         }
@@ -62,6 +45,23 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
     $scope.shareOnFaceBook = function() {
     	alert('sharing on facebook');
     }
+    
+    $scope.snapshot = function() {
+        if (localMediaStream) {
+            ctx.drawImage(video, 0, 0, 320, 240);
+            file = canvas.toDataURL('image/png');
+            if ($scope.photoCount % 2 === 0) {
+            	$scope.createImageResult('1');
+            } else {
+            	$scope.createImageResult('2');
+            }
+            $scope.photoCount++;
+            $scope.loadThumbNail(false);
+            if($scope.photoCount >= 2) {
+            	$scope.showResult(true);
+            }
+        }
+    };
 
 }
     

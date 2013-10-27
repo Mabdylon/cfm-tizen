@@ -171,24 +171,26 @@ div#countdown {
 	height: 100%;
 }
 
-div#thumbnail1 { /* image size: 80x91, *0.7 */
+#upImage1 {
+	position: absolute;
+	top: 10px;
+	left: 10px;
 	width: 80px;
 	height: 60px;
-	left: 10px;
-	top: 10px;
-	background-size: 80px 60px;
-	background-color: transparent;
-	background-image: url('../images/camera/none.png');
-	background-reapeat: no-repeat;
+	background-size: 100%;
+	background-color: #FFF;
+	background-position:center;
+	background-repeat: no-repeat;
 }
 
-div#thumbnail2 { /* image size: 80x91, *0.7 */
+#upImage2 {
+	position: absolute;
+	top: 10px;
+	right: 10px;
 	width: 80px;
 	height: 60px;
-	right: 10px;
-	top: 10px;
-	background-size: 80px 60px;
-	background-color: transparent;
-	background-image: url('../images/camera/none.png');
-	background-reapeat: no-repeat;
+	background-size: 100%;
+	background-color: #FFF;
+	background-position:center;
+	background-repeat: no-repeat;
 }
