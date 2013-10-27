@@ -29,6 +29,7 @@ function camera($scope, $http, choozForMeResources, choozForMeServices) {
 
     $scope.createImageResult = function(number) {
     	$('#upImage'+number).css('background-image', 'url(' + file + ')');
+    	$('#image_'+number).val(file);
     };
     
     $scope.loadThumbNail = function(show) {

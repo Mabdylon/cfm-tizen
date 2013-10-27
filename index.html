@@ -50,16 +50,30 @@
 	</section>
 
 	<section id="camera_result_page" ng-show="displayResult">
-		<section id="camera_result_preview">
-			<div id="upImage1"></div>
-			<div id="upImage2"></div>
-		</section>
-		<section id="camera_result_input">
-			<input type="text" ng-model="title" placeholder="Title to display" />
-		</section>
-		<section id="camera_result_share">
-
-		</section>
+		<form method="post" action="http://chooz-us.herokuapp.com/chooses" enctype="multipart/form-data">
+			<input type="hidden" name="facebook_id"
+				placeholder="creator facebook_id" value="100001554120988" /><br />
+			<input type="hidden" name="facebook_access_token"
+				placeholder="creator facebook_access_token" value="CAAUQou44hrwBABP6Nh1PGILOP7GA1cjGuf1guySxsEQ9MBHnLOCRLxwdkIDr3y6KokReYgUEmCkr0mPQBcfvLBR9ciiCZBG2LGRoNvARlrFS9ZCYLZCG3JHOAGIWEoGhDLI1F6HGh5AgsfC8BWOJPr1ujG4LmnrkyqNAHwhZBUQiFdNv7nkrJtHSizno24sZD"/><br /> 
+			<input
+				type="text" name="title" placeholder="choose title" /><br /> 
+			<input
+				type="file" name="image_0" id="image_1" style="display: none;" /><br /> 
+			<input
+				type="file" name="image_1" id="image_2" style="display: none;" /><br />
+			<section id="camera_result_preview" ng-click="showResult(false)">
+				<div id="upImage1"></div>
+				<div id="upImage2"></div>
+			</section>
+			<section id="camera_result_input">
+				<input type="text" name="title" placeholder="Title to display" />
+			</section>
+			<section id="camera_result_share">
+				<input type="submit" value="submit"> 
+				<img src="images/ask-on-facebook.png" width="125" height="125"/>
+					<!-- href="http://chooz-us.herokuapp.com/auth/facebook" -->
+			</section>
+		</form>
 	</section>
 
 </body>
